@@ -9,7 +9,7 @@ const textElement = {
   props: { nodeValue: "Text" },
 };
 
-const element = {
+export const element = {
   type: "div",
   props: {
     id: "container",
