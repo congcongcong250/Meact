@@ -1,8 +1,13 @@
 // <div id="container">
 //   <input value="foo" type="text">
 //   <a href="/bar"></a>
-//   <span></span>
+//   <span>Text</span>
 // </div>
+
+const textElement = {
+  type: "TEXT ELEMENT",
+  props: { nodeValue: "Text" },
+};
 
 const element = {
   type: "div",
@@ -11,7 +16,7 @@ const element = {
     children: [
       { type: "input", props: { value: "foo", type: "text" } },
       { type: "a", props: { href: "/bar" } },
-      { type: "span", props: {} },
+      { type: "span", props: { children: [textElement] } },
     ],
   },
 };
