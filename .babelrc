@@ -1,1 +1,11 @@
-{}
+{
+  "plugins": [
+    [
+      "@babel/plugin-transform-react-jsx",
+      {
+        "throwIfNamespace": false, // defaults to true
+        "pragma": "Meact.createElement"
+      }
+    ]
+  ]
+}

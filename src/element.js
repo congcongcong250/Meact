@@ -1,13 +1,9 @@
+import Meact from "./Meact";
 // <div id="container">
 //   <input value="foo" type="text">
 //   <a href="/bar" onclick="function(e){e.preventDefault(); alert("nothing")}">link to nowhere</a>
 //   <span>Text</span>
 // </div>
-
-const createTextElement = (text) => ({
-  type: "TEXT ELEMENT",
-  props: { nodeValue: text },
-});
 
 export const element = {
   type: "div",
@@ -23,10 +19,16 @@ export const element = {
             e.preventDefault();
             alert("nothing");
           },
-          children: [createTextElement("link to nowhere")],
+          children: [Meact.createTextElement("link to nowhere")],
         },
       },
-      { type: "span", props: { children: [createTextElement("Text")] } },
+      { type: "span", props: { children: [Meact.createTextElement("Text")] } },
     ],
   },
 };
+
+export const jsxElement = (
+  <div>
+    <h1>This is from JSX</h1>
+  </div>
+);
