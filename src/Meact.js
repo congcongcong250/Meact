@@ -8,9 +8,7 @@ const createElement = (type, nullableProps, ...rawChildren) => {
   const children = (rawChildren || [])
     .filter((child) => child != null && child !== false)
     .map((child) => {
-      return typeof child === "string" || typeof child === "number"
-        ? createTextElement(child)
-        : child;
+      return child instanceof Object ? child : createTextElement(child);
     });
   return {
     type,
