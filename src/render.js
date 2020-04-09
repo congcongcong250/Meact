@@ -1,30 +1,21 @@
-export function render(element, parentDom) {
-  const { type, props = {} } = element;
+let rootNode = null;
 
-  // create dom element
-  const el =
-    type === "TEXT ELEMENT"
-      ? document.createTextNode("")
-      : document.createElement(type);
+export function render(element, containerDom) {
+  const prevRoot = rootNode;
+  const newRoot = reconcile(containerDom, prevRoot, element);
+  rootNode = newRoot;
+}
 
-  // map element props to dom properties
-  Object.keys(props).forEach((key) => {
-    if (key === "children") {
-      return;
-    }
-    // bind event listeners
-    if (key.startsWith("on")) {
-      const eventName = key.toLowerCase().substring(2);
-      el.addEventListener(eventName, props[key]);
-    } else {
-      // map normal DOM properties
-      el[key] = props[key];
-    }
-  });
-  // recurrsivly render children
-  (props.children || []).forEach((child) => render(child, el));
-  // attach Dom element to parent node
-  parentDom.appendChild(el);
+function reconcile(parentDom, vnode, element) {
+  if (vnode == null) {
+    const newVNode = createVNode(element);
+    parentDom.appendChild(newVNode.dom);
+    return newVNode;
+  } else {
+    const newVNode = createVNode(element);
+    parentDom.replaceChild(newVNode.dom, vnode.dom);
+    return newVNode;
+  }
 }
 
 export function createVNode(element) {
