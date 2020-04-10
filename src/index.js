@@ -1,4 +1,5 @@
 import { render } from "./render";
+import { Counter } from "./component";
 import Meact from "./Meact";
 
 let count = 0;
@@ -20,5 +21,5 @@ const getElement = () => {
 
 document.addEventListener("DOMContentLoaded", (event) => {
   console.log("DOM fully loaded and parsed");
-  render(getElement(), document.getElementById("root"));
+  render(<Counter />, document.getElementById("root"));
 });
