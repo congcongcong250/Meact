@@ -7,53 +7,81 @@ export function render(element, containerDom) {
 }
 
 function reconcile(parentDom, oldVNode, element) {
+  // Create VNode
   if (oldVNode == null) {
-    // Create VNode
     const newVNode = createVNode(element);
     parentDom.appendChild(newVNode.dom);
     return newVNode;
-  } else if (element == null) {
-    // Delete VNode/dom
+  }
+  // Delete VNode/dom
+  if (element == null) {
     parentDom.removeChild(oldVNode.dom);
     return null;
-  } else if (oldVNode.element.type === element.type) {
-    // Update VNode
-    updateDomProperties(oldVNode.dom, oldVNode.element.props, element.props);
-    // Reconcile children
-    oldVNode.childrenVNodes = reconcileChildren(oldVNode, element);
-    oldVNode.element = element;
-    return oldVNode;
-  } else {
-    // Replace VNode
-    const newVNode = createVNode(element);
-    parentDom.replaceChild(newVNode.dom, oldVNode.dom);
-    return newVNode;
   }
+  // Update VNode
+  if (oldVNode.element.type === element.type) {
+    if (typeof element.type === "string") {
+      // Update Dom VNode
+      updateDomProperties(oldVNode.dom, oldVNode.element.props, element.props);
+      // Reconcile children
+      oldVNode.childrenVNodes = reconcileChildren(oldVNode, element);
+      oldVNode.element = element;
+    } else {
+      // Update Class Component VNode
+      // updateProps lifeCycle
+      oldVNode.classInstance.props = element.props;
+      const childElement = oldVNode.classInstance.render();
+      const oldChildVNode = oldVNode.childrenVNodes[0];
+      const childVNode = reconcile(parentDom, oldChildVNode, childElement);
+      oldVNode.dom = childVNode.dom;
+      oldVNode.childrenVNodes = [childVNode];
+      oldVNode.element = element;
+    }
+    return oldVNode;
+  }
+  // Replace VNode
+  const newVNode = createVNode(element);
+  parentDom.replaceChild(newVNode.dom, oldVNode.dom);
+  return newVNode;
 }
 
 function createVNode(element) {
   const { type, props = {} } = element;
-  // create dom element
-  const dom =
-    type === "TEXT ELEMENT"
-      ? document.createTextNode("")
-      : document.createElement(type);
+  const VNode = { element };
+  let dom;
+  let childrenVNodes;
+  const isDomVNode = typeof type === "string";
+  if (isDomVNode) {
+    // Create Dom VNode
+    // create dom element
+    dom =
+      type === "TEXT ELEMENT"
+        ? document.createTextNode("")
+        : document.createElement(type);
 
-  updateDomProperties(dom, {}, props);
+    updateDomProperties(dom, {}, props);
 
-  // recurrsivly creat children VNode
-  const childrenVNodes = (props.children || []).map((child) =>
-    createVNode(child)
-  );
-  childrenVNodes.forEach((child) => {
-    dom.appendChild(child.dom);
-  });
+    // recurrsivly creat children VNode
+    childrenVNodes = (props.children || []).map((child) => createVNode(child));
+    childrenVNodes.forEach((child) => {
+      dom.appendChild(child.dom);
+    });
+  } else {
+    // Create Class Component VNode
+    const classInstance = new type(props);
+    const childElement = classInstance.render();
+    childrenVNodes = [createVNode(childElement)];
+    dom = childrenVNodes[0].dom;
 
-  return {
-    dom,
-    element,
-    childrenVNodes,
-  };
+    VNode.classInstance = classInstance;
+    classInstance.__internalVNode = VNode;
+  }
+
+  VNode.dom = dom;
+  VNode.element = element;
+  VNode.childrenVNodes = childrenVNodes;
+
+  return VNode;
 }
 
 function updateDomProperties(dom, prevProps, nextProps) {
@@ -89,7 +117,16 @@ function reconcileChildren(oldVNode, element) {
       oldChildrenVNodes[i],
       childrenElements[i]
     );
-    newChildrenVNodes.push(newVNode);
+    newVNode && newChildrenVNodes.push(newVNode);
   }
   return newChildrenVNodes;
+}
+
+// forceUpdate
+// Update state lifecycle
+export function updateClassNode(componentVNode) {
+  const parentDom = componentVNode.dom.parentDom;
+  // update with ONLY current cached props
+  const element = componentVNode.element;
+  reconcile(parentDom, componentVNode, element);
 }
